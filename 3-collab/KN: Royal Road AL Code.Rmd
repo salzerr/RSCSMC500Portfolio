@@ -1,0 +1,62 @@
+---
+title: "AL"
+author: "Rebecca Salzer"
+date: '2023-05-22'
+output: html_document
+---
+
+```{r read in and create generation column}
+library(tidyverse)
+library(gridExtra)
+ALdata <- read.csv("~/Documents/CMSC500/MABE2/build/fitness.csv")
+ALdata2 <- read.csv("~/Documents/CMSC500/MABE2/build/max_org.csv", stringsAsFactors = FALSE, colClasses = "character")
+gengap=100 #fill in for the gap between generations
+ALdata$generation <- 1:nrow(ALdata)*gengap
+head(ALdata)
+```
+
+```{r clean second dataset to get proportion of 1's in each location}
+char_vecgenome <- as.character(ALdata2$Genome)
+split_chargenome <- strsplit(char_vecgenome, "")
+ALdata2split <- as.data.frame(do.call(rbind, split_chargenome))
+colnames(ALdata2split) <- paste0("Location", 1:ncol(ALdata2split))
+frequency_ones <- colSums(ALdata2split == 1)
+proportions_ones <- colMeans(ALdata2split == 1)
+ALdata2new <- data.frame(
+  Column = colnames(ALdata2split),
+  Frequency_ones = frequency_ones,
+  Proportion_ones = proportions_ones
+)
+head(ALdata2new)
+```
+
+```{r graph for fitness}
+p1<-ggplot(ALdata) +
+  geom_point(aes(x=generation, y=Average.Fitness), color='orange') + geom_point(aes(x=generation, y=Maximum.Fitness), color='green') + geom_point(aes(x=generation, y=Dominant.Fitness) , color='red') + ylab("Fitness") + xlab("Generation") + labs(title="Dominant, Maximum and Average Fitness Across Generations")
+```
+
+```{r graph for avg fitness}
+p2<-ggplot(ALdata) +
+  geom_point(aes(x=generation, y=Average.Fitness), color='orange') + ylab("Average Fitness") + xlab("Generation") + labs(title="Average Fitness Across Generations")
+```
+
+```{r graph for max fitness}
+p3<-ggplot(ALdata) +
+  geom_point(aes(x=generation, y=Maximum.Fitness), color='green') + ylab("Maximum Fitness") + xlab("Generation") + labs(title="Maximum Fitness Across Generations")
+```
+
+```{r graph for dominant fitness}
+p4<-ggplot(ALdata) +
+  geom_point(aes(x=generation, y=Dominant.Fitness), color='red') + ylab("Dominant Fitness") + xlab("Generation") + labs(title="Dominant Fitness Across Generations")
+```
+
+```{r displaying graphics}
+grid.arrange(p1, p2, p3, p4, ncol=2)
+```
+
+```{r graph and table about proportion of ones}
+ggplot(ALdata2new) +
+  geom_point(aes(x = Column, y = Proportion_ones, color = ifelse(Proportion_ones < 0.25, "green", ifelse(Proportion_ones > 0.75, "blue", "red")))) +
+  xlab("Location") + ylab("Proportion of Ones") + labs(title="Proportion of Ones in Each Genome Location For Best Orgs") +
+  guides(color = "none")
+```
