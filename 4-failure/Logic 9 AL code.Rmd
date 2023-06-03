@@ -1,0 +1,119 @@
+---
+title: "AL"
+author: "Rebecca Salzer"
+date: '2023-05-22'
+output: html_document
+---
+
+```{r read in and create generation column}
+library(tidyverse)
+library(gridExtra)
+ALdata <- read.csv("~/Documents/CMSC500/MABE2/build/fitness.csv")
+ALdata2 <- read.csv("~/Documents/CMSC500/MABE2/build/max_org.csv", stringsAsFactors = FALSE, colClasses = "character")
+gengap=1 #fill in for the gap between generations
+ALdata$generation <- 1:nrow(ALdata)*gengap
+ALdata2$generation <- 1:nrow(ALdata2)*gengap
+view(ALdata)
+view(ALdata2)
+```
+
+```{r graph for fitness}
+p1<-ggplot(ALdata) +
+  geom_point(aes(x=generation, y=merit_mean), color='orange') + geom_point(aes(x=generation, y=merit_max), color='green') + ylab("Merit") + xlab("Generation") + labs(title="Maximum and Average Fitness Across Generations")
+```
+
+```{r graph for avg fitness}
+p2<-ggplot(ALdata) +
+  geom_point(aes(x=generation, y=merit_mean), color='orange') + ylab("Average Fitness") + xlab("Generation") + labs(title="Average Fitness Across Generations")
+```
+
+```{r graph for max fitness}
+p3<-ggplot(ALdata) +
+  geom_point(aes(x=generation, y=merit_max), color='green') + ylab("Maximum Fitness") + xlab("Generation") + labs(title="Maximum Fitness Across Generations")
+```
+
+```{r displaying graphics}
+grid.arrange(p1, p2, p3, ncol=1)
+```
+
+```{r graph for fraction of logic}
+p4 <- ggplot(ALdata) +
+  geom_point(aes(x = generation, y = nand_frac)) +
+  xlab("Generation") + ylab("Fraction of NAnds Completed") +
+  labs(title = "Fraction of NAnds Completed Across Generations") +
+  scale_y_continuous(limits = c(0, 1))
+
+p5 <- ggplot(ALdata) +
+  geom_point(aes(x = generation, y = not_frac)) +
+  xlab("Generation") + ylab("Fraction of Nots Completed") +
+  labs(title = "Fraction of Nots Completed Across Generations") +
+  scale_y_continuous(limits = c(0, 1))
+
+p6 <- ggplot(ALdata) +
+  geom_point(aes(x = generation, y = and_frac)) +
+  xlab("Generation") + ylab("Fraction of Ands Completed") +
+  labs(title = "Fraction of Ands Completed Across Generations") +
+  scale_y_continuous(limits = c(0, 1))
+
+p7 <- ggplot(ALdata) +
+  geom_point(aes(x = generation, y = ornot_frac)) +
+  xlab("Generation") + ylab("Fraction of Or-Nots Completed") +
+  labs(title = "Fraction of Or-Nots Completed Across Generations") +
+  scale_y_continuous(limits = c(0, 1))
+
+p8 <- ggplot(ALdata) +
+  geom_point(aes(x = generation, y = andnot_frac)) +
+  xlab("Generation") + ylab("Fraction of And-Nots Completed") +
+  labs(title = "Fraction of And-Nots Completed Across Generations") +
+  scale_y_continuous(limits = c(0, 1))
+
+p9 <- ggplot(ALdata) +
+  geom_point(aes(x = generation, y = or_frac)) +
+  xlab("Generation") + ylab("Fraction of Ors Completed") +
+  labs(title = "Fraction of Ors Completed Across Generations") +
+  scale_y_continuous(limits = c(0, 1))
+
+p10 <- ggplot(ALdata) +
+  geom_point(aes(x = generation, y = nor_frac)) +
+  xlab("Generation") + ylab("Fraction of NOrs Completed") +
+  labs(title = "Fraction of NOrs Completed Across Generations") +
+  scale_y_continuous(limits = c(0, 1))
+
+p11 <- ggplot(ALdata) +
+  geom_point(aes(x = generation, y = equ_frac)) +
+  xlab("Generation") + ylab("Fraction of Equals Completed") +
+  labs(title = "Fraction of Equals Completed Across Generations") +
+  scale_y_continuous(limits = c(0, 1))
+
+```
+
+
+```{r displaying graphics}
+grid.arrange(p4, p5, p6, p7,ncol=2)
+grid.arrange(p8, p9, p10, p11,ncol=2)
+```
+
+
+```{r get the num of ones and plot}
+ALdata2 <-ALdata2 %>% mutate (numones = case_when(not ==  1 ~ 1,
+                                                     not != 1 ~ 0))
+ALdata2 <-ALdata2 %>% mutate (numones = case_when(and == 1 ~ (numones+1), 
+                                                     and != 1 ~ numones))
+ALdata2 <-ALdata2 %>% mutate (numones = case_when(nand == 1 ~ (numones+1), 
+                                                     nand != 1 ~ numones))
+ALdata2 <-ALdata2 %>% mutate (numones = case_when(ornot == 1 ~ (numones+1), 
+                                                     ornot != 1 ~ numones))
+ALdata2 <-ALdata2 %>% mutate (numones = case_when(andnot == 1 ~ (numones+1), 
+                                                     andnot != 1 ~ numones))
+ALdata2 <-ALdata2 %>% mutate (numones = case_when(or == 1 ~ (numones+1), 
+                                                     or != 1 ~ numones))
+ALdata2 <-ALdata2 %>% mutate (numones = case_when(xor == 1 ~ (numones+1), 
+                                                     xor != 1 ~ numones))
+ALdata2 <-ALdata2 %>% mutate (numones = case_when(equ == 1 ~ (numones+1), 
+                                                     equ != 1 ~ numones))
+ALdata2 <-ALdata2 %>% mutate (numones = case_when(nor == 1 ~ (numones+1), 
+                                                     nor != 1 ~ numones))
+ggplot(ALdata2) +
+  geom_point(aes(x = generation, y = numones)) +
+  xlab("Generation") + ylab("Number Correct") + labs(title="Number Correct For Best Orgs in Each Generation") 
+```
